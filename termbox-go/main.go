@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -8,6 +9,15 @@ import (
 )
 
 func main() {
+
+	digital_raindrops := []string{
+		"ｱ", "ｲ", "ｳ", "ｴ", "ｵ", "ｶ", "ｷ",
+		"ｸ", "ｹ", "ｺ", "ｻ", "ｼ", "ｽ", "ｾ", "ｿ", "ﾀ", "ﾁ", "ﾂ",
+		"ﾃ", "ﾄ", "ﾅ", "ﾆ", "ﾇ", "ﾈ", "ﾉ", "ﾊ", "ﾋ", "ﾌ", "ﾍ",
+		"ﾎ", "ﾏ", "ﾐ", "ﾑ", "ﾒ", "ﾓ", "ﾔ", "ﾕ", "ﾖ", "ﾗ", "ﾘ",
+		"ﾙ", "ﾚ", "ﾛ", "ﾜ", "ﾝ"}
+
+	fmt.Println(digital_raindrops)
 
 	// Initialize terminal
 	err := termbox.Init()
@@ -46,13 +56,18 @@ mainloop:
 					// Set cell in back buffer
 					// termbox.SetCell(x, y, ' ', termbox.ColorDefault, termbox.Attribute(rand.Int()%8)+1)
 
-					if r.Intn(1) == 1 {
-						termbox.SetCell(x, y, ' ', termbox.ColorDefault, termbox.ColorGreen)
+					if r.Intn(2) == 1 {
+						dropToDisplay := digital_raindrops[r.Intn(len(digital_raindrops))]
+						r := []rune(dropToDisplay)
+						// fmt.Println(r[0])
+						// time.Sleep(time.Second * 2)
+						termbox.SetCell(x, y, r[0], termbox.ColorGreen, termbox.ColorBlack)
 					}
 					// Flushes back buffer to screen
 					termbox.Flush()
 				}
 			}
+			termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 		}
 	}
 }
