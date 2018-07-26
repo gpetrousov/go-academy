@@ -53,17 +53,11 @@ mainloop:
 		default:
 			for y := 0; y < h; y++ {
 				for x := 0; x < w; x++ {
-					// Set cell in back buffer
-					// termbox.SetCell(x, y, ' ', termbox.ColorDefault, termbox.Attribute(rand.Int()%8)+1)
-
 					if r.Intn(2) == 1 {
 						dropToDisplay := digital_raindrops[r.Intn(len(digital_raindrops))]
 						r := []rune(dropToDisplay)
-						// fmt.Println(r[0])
-						// time.Sleep(time.Second * 2)
 						termbox.SetCell(x, y, r[0], termbox.ColorGreen, termbox.ColorBlack)
 					}
-					// Flushes back buffer to screen
 					termbox.Flush()
 				}
 			}
