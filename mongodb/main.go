@@ -6,30 +6,71 @@ import (
 	"log"
 
 	"github.com/mongodb/mongo-go-driver/bson"
+	"github.com/mongodb/mongo-go-driver/bson/objectid"
 	"github.com/mongodb/mongo-go-driver/mongo"
 )
 
+// CONNECTIONSTRING Connection to mongodb server
+const CONNECTIONSTRING string = "mongodb://localhost:27017"
+
+// Person is the document to insert into DB
 type Person struct {
-	ID        string `bson:"_id" json:"id"`
-	Firstname string `bson:"firstname" json:"firstname"`
-	Lastname  string `bson:"lastname" json:"lastname"`
+	ID        objectid.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	Firstname string            `bson:"firstname" json:"firstname"`
+	Lastname  string            `bson:"lastname" json:"lastname"`
 }
 
 var people []Person
 
-func main() {
-
-	people = append(people, Person{ID: "1", Firstname: "Bruce", Lastname: "Wayne"})
-	people = append(people, Person{ID: "2", Firstname: "Ioannis", Lastname: "Petrousov"})
-	person := Person{ID: "2", Firstname: "Ioannis", Lastname: "Petrousov"}
-
-	// Setup client and connection
-	client, err := mongo.NewClient("mongodb://localhost:27017")
+func showAll(collection *mongo.Collection) {
+	// 3. Show all documents
+	fmt.Println("Show all documents")
+	// Return to us a cursor which we'll have to walk over
+	cur, err := collection.Find(context.Background(), nil, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = client.Connect(context.TODO())
+	var elements []interface{}
+	// Get the next result from the cursor
+	for cur.Next(context.Background()) {
+		elem := bson.NewDocument()
+		err := cur.Decode(elem)
+		if err != nil {
+			log.Fatal(err)
+		}
+		elements = append(elements, elem)
+	}
+	if err := cur.Err(); err != nil {
+		log.Fatal(err)
+	}
+	cur.Close(context.Background())
+
+	fmt.Println(elements)
+}
+
+func deleteAll(collection *mongo.Collection) {
+	fmt.Println("Delete all documents")
+	res, err := collection.DeleteMany(context.Background(), nil, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(res)
+}
+
+func main() {
+
+	people = append(people, Person{ID: objectid.New(), Firstname: "Bruce", Lastname: "Wayne"})
+	people = append(people, Person{ID: objectid.New(), Firstname: "Clark", Lastname: "Kent"})
+
+	// Setup connection and DB client
+	client, err := mongo.NewClient(CONNECTIONSTRING)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Initializes the Client by starting background monitoring goroutines
+	err = client.Connect(context.Background())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -38,54 +79,33 @@ func main() {
 	// Collection types can be used to access the database
 	collection := client.Database("baz").Collection("qux")
 
+	// Insert multiple documents
+	fmt.Println("Insert multiple documents")
 	var ppl []interface{}
 	for _, p := range people {
 		ppl = append(ppl, p)
 	}
 
-	// Insert documents to database
 	_, err = collection.InsertMany(context.Background(), ppl)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	//  Finds the documents matching a model
-	cur, err := collection.Find(context.Background(), person)
+	showAll(collection)
+
+	// Insert one document
+	fmt.Println("Insert one document")
+	person := Person{ID: objectid.New(), Firstname: "Ioannis", Lastname: "Petrousov"}
+	_, err = collection.InsertOne(context.Background(), person)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer cur.Close(context.Background())
-	// Get the next result from the cursor.
-	// Returns true if there were no errors and there is a next result.
-	for cur.Next(context.Background()) {
-		elem := bson.NewDocument()
-		err := cur.Decode(elem)
-		if err != nil {
-			log.Fatal(err)
-		}
 
-		// do something with element
+	showAll(collection)
 
-		fmt.Printf("Keys of document: ")
-		fmt.Println(elem.Keys(false))
-
-		fmt.Printf("Length of document: ")
-		fmt.Println(elem.Len())
-
-		// Interface returns the Go value of this Value as an empty interface.
-		v := elem.Lookup("firstname")
-		fmt.Println(v.Interface())
-
-		// Returns the string balue for this element
-		fmt.Println(v.StringValue())
-
-	}
-	if err := cur.Err(); err != nil {
-		log.Fatal(err)
-	}
-
-	// Delete document from DB
-	collection.DeleteOne(context.Background(), person)
+	// Delete all documents
+	deleteAll(collection)
+	showAll(collection)
 
 	// Close connection to DB
 	client.Disconnect(context.Background())
