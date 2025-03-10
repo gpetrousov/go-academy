@@ -28,6 +28,12 @@ func main() {
 	jim.updateName("Jimmy")
 	jim.print()
 
+    jim.printContact()
+
+}
+
+func (p person) printContact()  {
+    fmt.Println("Email addr: ", p.email, "\nZip code:", p.zipCode)
 }
 
 // Struct receiver
