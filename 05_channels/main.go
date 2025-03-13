@@ -8,7 +8,8 @@ import (
 
 func main() {
 
-	c := make(chan string)
+    c := make(chan string)
+
 	links := []string{
 		"http://facebook.com",
 		"http://google.com",
@@ -18,19 +19,23 @@ func main() {
 	for _, link := range links {
 		go checkLink(link, c)
 	}
-	for {
-		go checkLink(<-c, c)
-	}
+
+    for l := range c {
+        go func(link string) {
+            time.Sleep(3 *time.Second)
+            checkLink(link, c)
+        }(l)
+    }
 }
 
 func checkLink(link string, c chan string) {
-	time.Sleep(5 * time.Second)
 	_, err := http.Get(link)
 	if err != nil {
-		fmt.Println(link, "tango down")
-		c <- link
+        fmt.Printf("%s => tango down\n", link)
+        c <- link
 		return
 	}
-	fmt.Println(link, "is up")
-	c <- link
+	// fmt.Println(link, "is up")
+    fmt.Printf("%s => is alive\n", link)
+    c <- link
 }
