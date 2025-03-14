@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -65,19 +66,8 @@ func main()  {
 
     case "list":
 
-        switch cliArgs[1] {
-        case "all":
-            fmt.Println("==>> List all tasks <<==")
-
-        case "done":
-            fmt.Println("List all done tasks")
-
-        case "todo":
-            fmt.Println("List all todo tasks")
-
-        case "in-progress":
-            fmt.Println("List all on going tasks")
-        }
+        fmt.Println("==>> List task <<==")
+        listTasks()
 
     default:
         // Print usage
@@ -165,9 +155,10 @@ func  markTask(taskIndex int, taskFlag string) {
 }
 
 // List tasks
-func (lst *GoDoList) listTasks()  {
-    fmt.Println("#", "\tTitle",  "\t\tDescription", "\tComplete")
-    // for i, t := range *lst {
-        // fmt.Print(i+1, ".\t", t.Title, "\t", t.Description, "\t", t.Completed, "\n")
-    // }
+func listTasks()  {
+    rb, err := os.ReadFile(godos)
+    pError(err)
+    var out bytes.Buffer
+    json.Indent(&out, rb, "", "\t")
+    out.WriteTo(os.Stdout)
 }
