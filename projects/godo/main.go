@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -13,7 +14,6 @@ import (
 
 type GoDoTask struct{
     ID int
-    Title string
     Description string
     Status string
     CreatedAt string
@@ -39,12 +39,18 @@ func main()  {
     case "add":
 
         fmt.Println("==>> Add new task <<==")
-        taskTitle := cliArgs[1]
-        taskDesc := strings.Join(cliArgs[2:], " ")
-        addTask(taskTitle, taskDesc)
+        taskDesc := strings.Join(cliArgs[1:], " ")
+        addTask(taskDesc)
 
     case "update":
-        fmt.Println("Update task")
+
+        fmt.Println("==>> Update task <<==")
+        taskId, err := strconv.Atoi(cliArgs[1])
+        if err != nil {
+            pError(err)
+        }
+        taskDesc := strings.Join(cliArgs[1:], " ")
+        updateTask(taskId, taskDesc)
 
     case "delete":
         fmt.Println("Delete task")
@@ -99,11 +105,13 @@ func main()  {
 
 
 func pError(e error) {
-    log.Fatal(e)
+    if e != nil {
+        log.Fatal(e)
+    }
 }
 
 // Adds new task to tasks file.
-func addTask(title, desc string) {
+func addTask(desc string) {
 
     rb, err := os.ReadFile(godos)
     if err != nil {
@@ -119,7 +127,6 @@ func addTask(title, desc string) {
 
     newTask := GoDoTask {
         ID : id,
-        Title : title,
         Description: desc,
         Status : "godo",
         CreatedAt: time.Now().Format(time.UnixDate),
@@ -131,6 +138,20 @@ func addTask(title, desc string) {
         pError(err)
     }
     os.WriteFile(godos, mb, 0664)
+}
+
+// Updates an existing task at index
+func updateTask(tId int, tDesc string) {
+    rb, err := os.ReadFile(godos)
+    pError(err)
+    var l GoDoList
+    err = json.Unmarshal(rb, &l)
+    pError(err)
+    l[tId].Description = tDesc
+    l[tId].UpdateAt = time.Now().Format(time.UnixDate)
+    mb, err := json.Marshal(l)
+    pError(err)
+    os.WriteFile(godos, mb, 0644)
 }
 
 // List tasks
