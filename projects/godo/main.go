@@ -53,7 +53,10 @@ func main()  {
         updateTask(taskId, taskDesc)
 
     case "delete":
-        fmt.Println("Delete task")
+        fmt.Println("==>> Delete task <<==")
+        taskId, err := strconv.Atoi(cliArgs[1])
+        pError(err)
+        delTask(taskId)
 
     case "mark":
         fmt.Println("mark task")
@@ -154,19 +157,26 @@ func updateTask(tId int, tDesc string) {
     os.WriteFile(godos, mb, 0644)
 }
 
+// Delete task at index
+func delTask(tIndex int){
+    var l GoDoList
+    rb, err := os.ReadFile(godos)
+    pError(err)
+    err = json.Unmarshal(rb, &l)
+    pError(err)
+    l = slices.Delete(l, tIndex, tIndex+1)
+    mb, err := json.Marshal(l)
+    pError(err)
+    os.WriteFile(godos, mb, 0664)
+}
+
+
 // List tasks
 func (lst *GoDoList) listTasks()  {
     fmt.Println("#", "\tTitle",  "\t\tDescription", "\tComplete")
     // for i, t := range *lst {
         // fmt.Print(i+1, ".\t", t.Title, "\t", t.Description, "\t", t.Completed, "\n")
     // }
-}
-
-// Delete task
-func (lst *GoDoList) delTask(i int){
-    l := *lst
-    l = slices.Delete(l, i, i+1)
-    *lst = l
 }
 
 // Mark task Completed
