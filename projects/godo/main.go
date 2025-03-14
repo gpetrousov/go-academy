@@ -37,13 +37,11 @@ func main()  {
     cliArgs := os.Args[1:]
     switch cliArgs[0] {
     case "add":
-
         fmt.Println("==>> Add new task <<==")
         taskDesc := strings.Join(cliArgs[1:], " ")
         addTask(taskDesc)
 
     case "update":
-
         fmt.Println("==>> Update task <<==")
         taskId, err := strconv.Atoi(cliArgs[1])
         if err != nil {
@@ -59,7 +57,11 @@ func main()  {
         delTask(taskId)
 
     case "mark":
-        fmt.Println("mark task")
+        fmt.Println("==>> Mark task <<==")
+        taskFlag := cliArgs[1]
+        taskId, err := strconv.Atoi(cliArgs[2])
+        pError(err)
+        markTask(taskId, taskFlag)
 
     case "list":
 
@@ -82,28 +84,6 @@ func main()  {
         fmt.Println(usage)
 
     }
-
-
-
-    
-    // taskList = append(taskList, GoDoTask{ Title: "First task", Description: "One, Two, Three", })
-    // taskList = append(taskList, GoDoTask{ Title: "Second task", Description: "One, Two, Three", })
-    // // fmt.Println(taskList)
-
-    // // List tasks
-    // taskList.listTasks()
-    //
-    // // Delete last task
-    // taskList.delTask(2)
-    //
-    // // Complete first task
-    // taskList.markComplete(0)
-    //
-    // // List tasks
-    // taskList.listTasks()
-    //
-    // // Convert to JSON
-    // taskList.toJSON()
 }
 
 
@@ -170,6 +150,19 @@ func delTask(tIndex int){
     os.WriteFile(godos, mb, 0664)
 }
 
+// Change task flag
+func  markTask(taskIndex int, taskFlag string) {
+    rb, err := os.ReadFile(godos)
+    pError(err)
+    var l GoDoList
+    err = json.Unmarshal(rb, &l)
+    pError(err)
+    l[taskIndex].Status = taskFlag
+    l[taskIndex].UpdateAt = time.Now().Format(time.UnixDate)
+    mb, err := json.Marshal(l)
+    pError(err)
+    os.WriteFile(godos, mb, 0644)
+}
 
 // List tasks
 func (lst *GoDoList) listTasks()  {
@@ -178,11 +171,3 @@ func (lst *GoDoList) listTasks()  {
         // fmt.Print(i+1, ".\t", t.Title, "\t", t.Description, "\t", t.Completed, "\n")
     // }
 }
-
-// Mark task Completed
-func (lst *GoDoList) markComplete(i int) {
-    l := *lst
-    // l[i].Completed = true
-    *lst = l
-}
-
