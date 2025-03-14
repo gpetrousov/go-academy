@@ -65,14 +65,17 @@ func main()  {
         markTask(taskId, taskFlag)
 
     case "list":
-
         fmt.Println("==>> List task <<==")
-        listTasks()
+        if len(cliArgs) == 1 {
+            listTasks()
+        } else if len(cliArgs) == 2 {
+            filter := cliArgs[1]
+            listFilteredTasks(filter)
+        }
 
     default:
         // Print usage
         fmt.Println(usage)
-
     }
 }
 
@@ -161,4 +164,20 @@ func listTasks()  {
     var out bytes.Buffer
     json.Indent(&out, rb, "", "\t")
     out.WriteTo(os.Stdout)
+}
+
+func listFilteredTasks(filter string)  {
+    rb, err := os.ReadFile(godos)
+    pError(err)
+    var l, d GoDoList
+    err = json.Unmarshal(rb, &l)
+    pError(err)
+    for _, t := range l {
+        if t.Status == filter {
+            d = append(d, t)
+        }
+    }
+    mb, err:= json.MarshalIndent(d, "", "\t")
+    pError(err)
+    fmt.Println(string(mb))
 }
