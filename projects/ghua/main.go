@@ -15,6 +15,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type GitHubRepo struct {
@@ -105,5 +106,37 @@ func main()  {
             userStats[e.Type] = newUserActions
             }
         }
-        fmt.Println(userStats)
+        fmt.Printf("User: %s\n", uName)
+        for ghEvent, uData := range userStats{
+            switch ghEvent {
+            case "CreateEvent":
+                for _, v := range uData{
+                    fmt.Printf("- Created %d Branches in %s\n", v.counter, v.repository)
+                }
+            case "IssuesEvent":
+                for _, v := range uData{
+                    fmt.Printf("- %s Issues in %s %d times\n", strings.Title(v.action), v.repository, v.counter)
+                }
+            case "WatchEvent":
+                for _, v := range uData{
+                    fmt.Printf("- %s watching %s %d times\n", strings.Title(v.action), v.repository, v.counter)
+                }
+            case "PullRequestEvent":
+                for _, v := range uData{
+                    fmt.Printf("- %s %d PRs in %s\n", strings.Title(v.action), v.counter, v.repository)
+                }
+            case "IssueCommentEvent":
+                for _, v := range uData{
+                    fmt.Printf("- Posted %d Comment(s) in %s\n", v.counter, v.repository)
+                }
+            case "DeleteEvent":
+                for _, v := range uData{
+                    fmt.Printf("- Deleted %d times branches in %s\n", v.counter, v.repository)
+                }
+            case "PushEvent":
+                for _, v := range uData{
+                    fmt.Printf("- PUshed %d times to %s\n", v.counter, v.repository)
+                }
+            }
+        }
     }
