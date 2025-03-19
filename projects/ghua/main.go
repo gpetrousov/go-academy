@@ -65,23 +65,6 @@ func main()  {
     userStats := make(map[string][]UserActions)
     for _, e := range ghEvents {
         counterIncreased := false
-        // fmt.Printf("Event Type: %s\n", e.Type)
-        // fmt.Printf("Event Repo: %s\n", e.Repo.Url)
-        // fmt.Printf("Event Action: %s\n", e.Payload.Action)
-        // fmt.Println("---")
-        /*
-        add_found = False
-
-        if eventType in map
-            if repoUrl in slice AND action in slice
-                add_found = True
-                mark_counter()
-            if event_found:
-                add event to slice
-                makr
-        else
-            Add new eventType object to map
-        */
         _, ok := userStats[e.Type]
         if ok {
             for i, itm := range userStats[e.Type] {
