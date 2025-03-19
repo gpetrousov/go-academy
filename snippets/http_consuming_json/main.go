@@ -5,6 +5,8 @@ JSON to it and only extrac the fields we're actually interested in.
 This technique uses interfaces which are equal to any for the fields
 we're not interested in.
 
+https://pkg.go.dev/encoding/json
+
 */
 
 package main
